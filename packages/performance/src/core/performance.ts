@@ -1,27 +1,32 @@
 import { on, _global } from '@websee/utils';
-import { Callback } from '@websee/types';
+import { Callback, PerformanceOption } from '@websee/types';
 import { onLCP, onFID, onCLS, onFCP, onTTFB } from 'web-vitals';
 
 // firstScreenPaint为首屏加载时间
 let firstScreenPaint = 0;
 // 页面是否渲染完成
 let isOnLoaded = false;
+let isRendered = false;
+let readyStateTime = 0;
+let animationFrameTimer: number;
 let timer: number;
 let observer: MutationObserver;
 let entries: any[] = [];
 
 // 定时器循环监听dom的变化，当document.readyState === 'complete'时，停止监听
 function checkDOMChange(callback: Callback) {
-  cancelAnimationFrame(timer);
-  timer = requestAnimationFrame(() => {
-    if (document.readyState === 'complete') {
+  cancelAnimationFrame(animationFrameTimer);
+  animationFrameTimer = requestAnimationFrame(() => {
+    // document.readyState === 'complete'时，记录一次渲染时间
+    if (!isOnLoaded && document.readyState === 'complete') {
       isOnLoaded = true;
+      readyStateTime = performance.now();
     }
-    if (isOnLoaded) {
+    if (isOnLoaded && isRendered) {
       // 取消监听
       observer && observer.disconnect();
-      // document.readyState === 'complete'时，计算首屏渲染时间
-      firstScreenPaint = getRenderTime();
+      console.log(readyStateTime, getRenderTime());
+      firstScreenPaint = Math.max(readyStateTime, getRenderTime());
       entries = [];
       callback && callback(firstScreenPaint);
     } else {
@@ -29,6 +34,8 @@ function checkDOMChange(callback: Callback) {
     }
   });
 }
+
+// 获得内容节点渲染时间
 function getRenderTime(): number {
   let startTime = 0;
   entries.forEach(entry => {
@@ -36,11 +43,14 @@ function getRenderTime(): number {
       startTime = entry.startTime;
     }
   });
-  // performance.timing.navigationStart 页面的起始时间
-  return startTime - performance.timing.navigationStart;
+
+  // performance.timeOrigin 页面的起始时间
+  return startTime - performance.timeOrigin;
 }
+
 const viewportWidth = _global.innerWidth;
 const viewportHeight = _global.innerHeight;
+
 // dom 对象是否在屏幕内
 function isInScreen(dom: HTMLElement): boolean {
   const rectInfo = dom.getBoundingClientRect();
@@ -62,9 +72,17 @@ function getFirstScreenPaint(callback: Callback) {
     observeFirstScreenPaint(callback);
   }
 }
+
 // 外部通过callback 拿到首屏加载时间
 export function observeFirstScreenPaint(callback: Callback): void {
   const ignoreDOMList = ['STYLE', 'SCRIPT', 'LINK'];
+
+  // 设置定时器，限定最大记录时长
+  clearTimeout(timer);
+  timer = setTimeout(() => {
+    isRendered = true;
+  }, 8000);
+
   observer = new MutationObserver((mutationList: any) => {
     checkDOMChange(callback);
     const entry = { children: [], startTime: 0 };
@@ -167,7 +185,6 @@ export function getFID(callback: Callback): void {
 
 export function getCLS(callback: Callback): void {
   let clsValue = 0;
-  // let clsEntries = [];
 
   let sessionValue = 0;
   let sessionEntries: any[] = [];
@@ -197,7 +214,6 @@ export function getCLS(callback: Callback): void {
         // 那么更新 CLS 及其相关条目。
         if (sessionValue > clsValue) {
           clsValue = sessionValue;
-          // clsEntries = sessionEntries;
           observer.disconnect();
 
           callback({
@@ -226,49 +242,51 @@ export function getTTFB(callback: Callback): void {
   });
 }
 
-export function getWebVitals(callback: Callback): void {
+export function getWebVitals(callback: Callback, options: PerformanceOption): void {
   // web-vitals 不兼容safari浏览器
   if (isSafari()) {
     getFID(res => {
-      callback(res);
+      !options.slientFID && callback(res);
     });
     getFCP(res => {
-      callback(res);
+      !options.slientFCP && callback(res);
     });
     getLCP(res => {
-      callback(res);
+      !options.slientLCP && callback(res);
     });
     getCLS(res => {
-      callback(res);
+      !options.slientCLS && callback(res);
     });
     getTTFB(res => {
-      callback(res);
+      !options.slientTTFB && callback(res);
     });
   } else {
-    onLCP(res => {
-      callback(res);
-    });
     onFID(res => {
-      callback(res);
-    });
-    onCLS(res => {
-      callback(res);
+      !options.slientFID && callback(res);
     });
     onFCP(res => {
-      callback(res);
+      !options.slientFCP && callback(res);
+    });
+    onLCP(res => {
+      !options.slientLCP && callback(res);
+    });
+    onCLS(res => {
+      !options.slientCLS && callback(res);
     });
     onTTFB(res => {
-      callback(res);
+      !options.slientTTFB && callback(res);
     });
   }
 
-  // 首屏加载时间
-  getFirstScreenPaint(res => {
-    const data = {
-      name: 'FSP',
-      value: res,
-      rating: res > 2500 ? 'poor' : 'good',
-    };
-    callback(data);
-  });
+  if (options.slientFSP !== true) {
+    // 首屏加载时间
+    getFirstScreenPaint(res => {
+      const data = {
+        name: 'FSP',
+        value: res,
+        rating: res > 2500 ? 'poor' : 'good',
+      };
+      callback(data);
+    });
+  }
 }

@@ -3,6 +3,7 @@ import { breadcrumb } from './index';
 import { addReplaceHandler } from './replace';
 import { htmlElementAsString, getTimestamp } from '@websee/utils';
 import { EVENTTYPES, STATUS_CODE } from '@websee/common';
+
 export function setupReplace(): void {
   // 白屏检测
   addReplaceHandler({

@@ -11,6 +11,11 @@
     <div
 </div>
 
+## 改进点
+1. 修复 `silentWhiteScreen` 配置参数不生效问题
+2. `@websee/performance` 提供了更多 `silentXXX` 配置参数
+3. 改进了 FSP 计算算法，解决了 [首屏计算结果为负数](https://github.com/xy-sea/web-see/issues/20)的问题。
+
 ## 功能
 
 - [√] ✈️ 错误捕获：代码报错、资源加载报错、接口请求报错
@@ -165,6 +170,18 @@ class ErrorBoundary extends React.Component {
 | `silentUnhandledrejection` | `boolean` | `true`  | 默认会监控 unhandledrejection，为 false 时，将不再监控                |
 |      `silentHistory`       | `boolean` | `true`  | 默认会监控 popstate、pushState、replaceState，为 false 时，将不再监控 |
 |     `silentHashchange`     | `boolean` | `true`  | 默认会监控 hashchange，为 false 时，将不再监控                        |
+
+## @websee/performance 插件的配置项
+|            Name            | Type      | Default | Description                                                           |
+| :------------------------: | --------- | ------- | --------------------------------------------------------------------- |
+|     `silentLongTask`         | `boolean` | `true`  | 默认会监控 longTask，为 false 时，将不再监控                             |
+|     `silentResourceList`     | `boolean` | `true`  | 默认会监控 resourceList，为 false 时，将不再监控                         |
+|     `silentMemory`        | `boolean` | `true`  | 默认会监控内存，为 false 时，将不再监控                                      |
+|     `slientFID`        | `boolean` | `true`  | 默认会监控 FID，为 false 时，将不再监控                                        |
+|     `slientFCP`       | `boolean` | `true`  | 默认会监控 FCP，为 false 时，将不再监控                |
+|     `slientLCP`       | `boolean` | `true`  | 默认会监控 LCP，为 false 时，将不再监控 |
+|     `slientTTFB`     | `boolean` | `true`  | 默认会监控 TTFB，为 false 时，将不再监控                        |
+|     `slientFSP`     | `boolean` | `true`  | 默认会监控 FSP，为 false 时，将不再监控                        |
 
 ## @websee/recordscreen 录屏插件的配置项
 

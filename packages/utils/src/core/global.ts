@@ -37,7 +37,7 @@ export function setFlag(replaceType: string, isSet: boolean) {
   replaceFlag[replaceType] = isSet;
 }
 export function getFlag(replaceType: string) {
-  return replaceFlag[replaceType] ? true : false;
+  return replaceFlag[replaceType];
 }
 // 获取全部变量__webSee__的引用地址
 export function getGlobalSupport() {

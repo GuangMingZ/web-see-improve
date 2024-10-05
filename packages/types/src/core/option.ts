@@ -36,3 +36,15 @@ export interface RecordScreenOption {
   recordScreenTypeList: string[];
   recordScreentime: number;
 }
+
+export interface PerformanceOption {
+  silentLongTask?: boolean;
+  silentResourceList?: boolean;
+  silentMemory?: boolean;
+  slientFID?: boolean;
+  slientFCP?: boolean;
+  slientLCP?: boolean;
+  slientCLS?: boolean;
+  slientTTFB?: boolean;
+  slientFSP?: boolean;
+}

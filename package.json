@@ -11,6 +11,7 @@
     "commit": "git-cz",
     "changeset": "changeset",
     "version-packages": "changeset version",
+    "publish:prepare": "cross-env MODULE_PATH=dist/index.esm.js node ./bin/replaceModule.js",
     "publish": "changeset publish --registry=https://registry.npmjs.com/",
     "release": "pnpm build && pnpm publish",
     "lint": "eslint . --ext .js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore"
