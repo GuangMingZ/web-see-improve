@@ -7,6 +7,16 @@ import { uglify } from 'rollup-plugin-uglify';
 import dts from 'rollup-plugin-dts';
 import fs from 'fs';
 import path from 'path';
+import dotenv from 'dotenv';
+
+const appDirectory = fs.realpathSync(process.cwd());
+const resolveApp = relativePath => path.resolve(appDirectory, relativePath);
+const pathsDotenv = resolveApp('.env');
+
+dotenv.config({ path: `${pathsDotenv}.${process.env.NODE_ENV}` });
+
+const sourcemap = process.env.SOURCEMAP === 'true';
+
 const packagesDir = path.resolve(__dirname, 'packages');
 const packageFiles = fs.readdirSync(packagesDir);
 function output(path) {
@@ -17,24 +27,24 @@ function output(path) {
         {
           file: `./packages/${path}/dist/index.cjs.js`,
           format: 'cjs',
-          sourcemap: true,
+          sourcemap,
         },
         {
           file: `./packages/${path}/dist/index.esm.js`,
           format: 'esm',
-          sourcemap: true,
+          sourcemap,
         },
         {
           file: `./packages/${path}/dist/index.js`,
           format: 'umd',
           name: 'web-see',
-          sourcemap: true,
+          sourcemap,
         },
         {
           file: `./packages/${path}/dist/index.min.js`,
           format: 'umd',
           name: 'web-see',
-          sourcemap: true,
+          sourcemap,
           plugins: [uglify()],
         },
       ],
